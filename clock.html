@@ -50,7 +50,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		var weekday_radius = 10;
 		var hour_radius = 60;
 		var min_radius = 40;
-		var sec_radius = 20;
+		var sec_radius = 15;
 		
 		// create background
 		var bg = new Path.Rectangle(new Point(0,0),new Size(view.bounds.width,view.bounds.height));
@@ -102,7 +102,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		// create hour text
 		var text_hour = new PointText(new Point(0,0));
 		text_hour.characterStyle = textStyle;
-		text_hour.fontSize = hour_radius;
+		text_hour.fontSize = hour_radius/2;
 		text_hour.justification = "center";
 		text_hour.fillColor = "#fafafa";
 		numbers_layer.addChild(text_hour);
@@ -115,7 +115,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		// create minute text
 		var text_min = new PointText(new Point(100,50));
-		text_min.fontSize = min_radius;
+		text_min.fontSize = min_radius/2;
 		text_min.font = "American Typewriter, Courier, typewriter";
 		text_min.justification = 'center';
 		text_min.fillColor = '#fafafa';
@@ -129,7 +129,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		// create seconds text
 		var text_sec = new PointText(new Point(0,0));
-		text_sec.fontSize = sec_radius;
+		text_sec.fontSize = sec_radius/2;
 		text_sec.font = "American Typewriter, Courier, typewriter";
 		text_sec.justification = 'center';
 		text_sec.fillColor = '#fafafa';
@@ -142,9 +142,9 @@ Date.prototype.getWeek = function (dowOffset) {
 		var nowDate = new Date();
 		
 		//addAlarm( new Date(79,5,24,6,45,0) );
-		addAlarm( new Date(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate(),nowDate.getHours(),nowDate.getMinutes()+1.0,nowDate.getSeconds()) );
+		//addAlarm( new Date(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate(),nowDate.getHours(),nowDate.getMinutes()+1.0,nowDate.getSeconds()) );
 		
-		var _debug = true;
+		var _debug = false;
 		var _oldDate = new Date();
 		var _count = 0;
 		var _max = 5;
