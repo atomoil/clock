@@ -30,7 +30,7 @@ Date.prototype.getWeek = function (dowOffset) {
 			nday = nYear.getDay() - dowOffset;
 			nday = nday >= 0 ? nday : nday + 7;
 			/*if the next year starts before the middle of
- 			  the week, it is week #1 of that year*/
+			  the week, it is week #1 of that year*/
 			weeknum = nday < 4 ? 1 : 53;
 		}
 	}
@@ -45,7 +45,9 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		var alarms = new Array();
 		
-		var centre_radius = 10;
+		var centre_radius = 1;
+		var weeknum_radius = 20;
+		var weekday_radius = 10;
 		var hour_radius = 100;
 		var min_radius = 60;
 		var sec_radius = 20;
@@ -54,7 +56,6 @@ Date.prototype.getWeek = function (dowOffset) {
 		var bg = new Path.Rectangle(new Point(0,0),new Size(view.bounds.width,view.bounds.height));
 		bg.fillColor = '#000000';
 		
-		
 		var alarms_layer = new Layer();
 		var hands_layer = new Layer();
 		var numbers_layer = new Layer();
@@ -62,7 +63,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		// create centre of clock
 		var circle_centre = new Path.Circle(view.center, centre_radius);
 		circle_centre.strokeColor = '#ffffff';
-		circle_centre.strokeWidth = 3.0;
+		circle_centre.strokeWidth = 0.5;
 		hands_layer.addChild(circle_centre);
 		
 		var alarmStyle = {
@@ -79,12 +80,21 @@ Date.prototype.getWeek = function (dowOffset) {
 			justification: "center",
 		};
 		
+		var circle_weeknum = new Path.Circle(new Point(0,0), weeknum_radius);
+		circle_weeknum.style = handStyle;
+		hands_layer.addChild(circle_weeknum);
+		
+		var circle_weekday = new Path.Circle(new Point(0,0), weekday_radius);
+		circle_weekday.style = handStyle;
+		hands_layer.addChild(circle_weekday);
+		
 		// create hour 'hand'
 		var circle_hour = new Path.Circle(new Point(0,0), hour_radius);
 		circle_hour.style = handStyle;
 		var group_hour = new Group(circle_hour); //,text_hour);
 		hands_layer.addChild(group_hour);
 		
+		// create hour text
 		var text_hour = new PointText(new Point(0,0));
 		text_hour.characterStyle = textStyle;
 		text_hour.fontSize = hour_radius;
@@ -98,6 +108,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		var group_min = new Group(circle_min); //,text_min);
 		hands_layer.addChild(group_min);
 		
+		// create minute text
 		var text_min = new PointText(new Point(100,50));
 		text_min.fontSize = min_radius;
 		text_min.font = "American Typewriter, Courier, typewriter";
@@ -111,6 +122,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		var group_sec = new Group(circle_sec);
 		hands_layer.addChild(group_sec);
 		
+		// create seconds text
 		var text_sec = new PointText(new Point(0,0));
 		text_sec.fontSize = sec_radius;
 		text_sec.font = "American Typewriter, Courier, typewriter";
@@ -125,31 +137,51 @@ Date.prototype.getWeek = function (dowOffset) {
 		var nowDate = new Date();
 		
 		//addAlarm( new Date(79,5,24,6,45,0) );
-		//addAlarm( new Date(79,5,24,nowDate.getHours(),nowDate.getMinutes()+1.0,0) );
+		addAlarm( new Date(79,5,24,nowDate.getHours(),nowDate.getMinutes()+1.0,0) );
 		
+		var _oldDate = new Date();
+		var _count = 0;
+		var _max = 3;
 		function onFrame(event) {
 			
-			var d = new Date();
-			positionHands(d,group_hour,group_min,group_sec,text_hour,text_min,text_sec);
+			var now = new Date();
+			var inc = 0;
+			_count += 1;
+			if (_count > _max){
+				_count = 0;
+				inc = 1;
+			}
+			var d = new Date(_oldDate.getFullYear(),_oldDate.getMonth(),_oldDate.getDate()+inc,now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
+			_oldDate = d;
+			positionHands(d,circle_weeknum,circle_weekday,group_hour,group_min,group_sec,text_hour,text_min,text_sec);
 		}
 		
-		function positionHands(d,g_hour,g_min,g_sec,t_hour,t_min,t_sec){
+		function positionHands(d,g_weeknum,g_weekday,g_hour,g_min,g_sec,t_hour,t_min,t_sec){
 		
 			var time_hour = d.getHours() % 12;
 			if (time_hour < 1) time_hour = 12-time_hour;
 			var time_min = d.getMinutes();
 			var time_sec = d.getSeconds();
+			var time_weekday = d.getDay();
+			var time_weeknum = d.getWeek();
 			
 			var perc_milli = d.getMilliseconds() / 1000;
 			var perc_sec = (time_sec+perc_milli)/60;
 			var perc_min = (time_min+perc_sec)/60;
 			var perc_hour = (time_hour+perc_min)/12;
+			var perc_weekday = time_weekday / 7;
+			var perc_weeknum = time_weeknum / 52;
 			
+			
+			var angle_weeknum = (perc_weeknum*(2*Math.PI))-(Math.PI/2.0);
+			var angle_weekday = (perc_weekday*(2*Math.PI))-(Math.PI/2.0);
 			var angle_hour = (perc_hour*(2*Math.PI))-(Math.PI/2.0);
 			var angle_min = (perc_min*(2*Math.PI))-(Math.PI/2.0);
 			var angle_sec = (perc_sec*(2*Math.PI))-(Math.PI/2.0);
 			
-			positionItem(g_hour, view.center, angle_hour, centre_radius+hour_radius);
+			if (g_weeknum != null) positionItem(g_weeknum, view.center, angle_weeknum, centre_radius+weeknum_radius+(weekday_radius*2));
+			if (g_weekday != null) positionItem(g_weekday, g_weeknum.position, angle_weekday, weeknum_radius+weekday_radius);
+			positionItem(g_hour, view.center, angle_hour, centre_radius+(weeknum_radius*2)+(weekday_radius*4)+hour_radius);
 			positionItem(g_min, g_hour.position, angle_min, hour_radius+min_radius+(sec_radius*2));
 			positionItem(g_sec, g_min.position, angle_sec, min_radius+sec_radius);
 			
@@ -159,18 +191,21 @@ Date.prototype.getWeek = function (dowOffset) {
 			//text_sec.content = time_sec; //Math.round(angle_sec*10)/10;
 			if (t_hour != undefined){
 				var angle_txt_hour = ((time_hour/12)*(2*Math.PI))-(Math.PI/2.0);
-				positionItem(t_hour, view.center, angle_txt_hour,  centre_radius+hour_radius);
+				positionItem(t_hour, view.center, angle_txt_hour,  centre_radius+(weeknum_radius*2)+(weekday_radius*4)+hour_radius);
+				t_hour.position.y += t_hour.fontSize / 2.0;
 				t_hour.content = time_hour;
 			}
 			if (t_min != undefined){
 				var angle_txt_min = ((time_min/60)*(2*Math.PI))-(Math.PI/2.0);
 				positionItem(t_min, g_hour.position, angle_txt_min, hour_radius+min_radius+(sec_radius*2));
 				t_min.content = time_min;
+				t_min.position.y += t_min.fontSize / 2.0;
 			}
 			if (t_sec != undefined){
 				var angle_txt_sec = ((time_sec/60)*(2*Math.PI))-(Math.PI/2.0);
 				positionItem(t_sec, g_min.position, angle_txt_sec, min_radius+sec_radius);
 				t_sec.content = time_sec;
+				t_sec.position.y += t_sec.fontSize / 2.0;
 			}
 		}
 		
@@ -202,7 +237,7 @@ Date.prototype.getWeek = function (dowOffset) {
 			c_sec.style = alarmStyle;
 			alarms_layer.addChild(c_sec);
 			
-			positionHands(d,c_hour,c_min,c_sec);
+			positionHands(d,null,null,c_hour,c_min,c_sec);
 			
 			alarms.push({date:d,hour:c_hour,min:c_min,sec:c_sec,trigger:0});
 		}
@@ -210,7 +245,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		function moveAlarms(){
 			for(var i=0;i<alarms.length;i++){
 				var alarm = alarms[i];
-				positionHands(alarm['date'],alarm['hour'],alarm['min'],alarm['sec']);
+				positionHands(alarm['date'],alarm['weeknum'],alarm['weekday'],alarm['hour'],alarm['min'],alarm['sec']);
 			}
 		}
 	</script>
