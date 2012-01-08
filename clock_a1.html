@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Clock</title>
+	<link rel="stylesheet" href="style.css">
+	<script type="text/javascript" src="lib/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		
+		//var anchor_loc = 
+		var hour_anchor = new Point(300,300);
+		var centre_radius = 2;
+		var hour_radius = 50;
+		var min_radius = 30;
+		var sec_radius = 15;
+		
+		var circle_centre = new Path.Circle(new Point(0,0), centre_radius);
+		circle_centre.strokeColor = '#000000';
+		
+		var circle_hour = new Path.Circle(new Point(0,0), hour_radius);
+		circle_hour.strokeColor = '#000000';
+		circle_hour.fillColor = '#000000';
+		var text_hour = new PointText(new Point(0,0));
+		text_hour.fontSize = 24;
+		text_hour.justification = "center";
+		text_hour.fillColor = "#ff0000";
+		var group_hour = new Group(circle_hour,text_hour);
+		
+		var circle_min = new Path.Circle(new Point(0,0), min_radius);
+		circle_min.strokeColor = '#000000';
+		circle_min.fillColor = '#000000';
+		var text_min = new PointText(new Point(0,0));
+		text_min.fontSize = 20;
+		text_min.justification = 'center';
+		text_min.fillColor = '#ffffff';
+		var group_min = new Group(circle_min,text_min);
+		
+		var circle_sec = new Path.Circle(new Point(0,0), sec_radius);
+		circle_sec.strokeColor = '#000000';
+		circle_sec.fillColor = '#000000';
+		var text_sec = new PointText(new Point(0,0));
+		text_sec.fontSize = 16;
+		text_sec.justification = 'center';
+		text_sec.fillColor = '#ffffff';
+		var group_sec = new Group(circle_sec,text_sec);
+		
+		var debug = new PointText(new Point(100,100));
+		//debug.content = "hello";
+		
+		var angle_hour = 0;
+		var angle_min = 0;
+		var angle_sec = 0;
+		
+		function onFrame(event) {
+			//firstPath.position.x += 1;
+			//circle_hour = //SOHCAHTOA  -- 
+			angle_hour -= (Math.PI / 400);
+			angle_min -= (Math.PI / 220);
+			angle_sec -= (Math.PI / 90);
+			
+			circle_centre.position = view.center;
+			positionItem(group_hour, view.center, angle_hour, centre_radius+hour_radius);
+			positionItem(group_min, group_hour.position, angle_min, hour_radius+min_radius+(sec_radius*2));
+			positionItem(group_sec, group_min.position, angle_sec, min_radius+sec_radius);
+			
+			text_hour.content = Math.round(angle_hour*10)/10;
+			text_min.content = Math.round(angle_min*10)/10;
+			text_sec.content = Math.round(angle_sec*10)/10;
+		}
+		
+		function positionItem(item, anchor, angle, distance){
+			
+			var xp = anchor.x + Math.sin(angle)*distance;
+			var yp = anchor.y + Math.cos(angle)*distance;
+			
+			debug.content = angle + "\n"+ Math.round(xp) + "\n" + yp;
+			item.position = new Point( xp, yp );
+		}
+		
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>

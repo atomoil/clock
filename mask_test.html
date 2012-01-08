@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Masking in Paper.js</title>
+	<link rel="stylesheet" href="style.css">
+	<script type="text/javascript" src="lib-0.22/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		
+		var circle = new Path.Circle(new Point(100,100), 50);
+		circle.fillColor = '#444444';
+		var circle2 = new Path.Circle(new Point(130,100), 49);
+		circle2.strokeColor = '#111111';
+		var style = {
+			font: "American Typewriter, Courier, typewriter",
+			justification: 'center',
+			fillColor: '#111111',
+			fontSize: 50
+		};
+		var text1 = new PointText(new Point(100,100));
+		text1.characterStyle = style;
+		text1.content = "1";
+		var text2 = new PointText(new Point(200,100));
+		text2.characterStyle = style;
+		text2.content = "2";
+		var text3 = new PointText(new Point(300,100));
+		text3.characterStyle = style;
+		text3.content = "3";
+		
+		//var circle3 = new Path.Circle(new Point(0,20),30);
+		//circle3.fillColor = '#111111';
+		
+		var agroup = new Group(circle,circle2,text1,text2,text3);
+		agroup.position = new Point(100,200);
+		
+		agroup.clipped = true;
+		
+		//circle.clipMask = false;
+		//circle3.clipped = true;
+		//circle3.clipMask = true;
+		
+		inc = 0.6;
+		
+		function onFrame(event) {
+			
+			var xp = circle.position.x;
+			xp += inc;
+			if (xp > 300) inc = -Math.abs(inc);
+			if (xp < 0) inc = Math.abs(inc);
+			circle.position.x = xp;
+			circle2.position = circle.position;
+			
+		}
+		
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>

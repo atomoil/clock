@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Clock</title>
+	<link rel="stylesheet" href="style.css">
+	<script type="text/javascript" src="lib/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		
+		var alarms = new Array();
+		
+		var centre_radius = 10;
+		var hour_radius = 50;
+		var min_radius = 30;
+		var sec_radius = 10;
+		
+		// create background
+		var bg = new Path.Rectangle(new Point(0,0),new Size(view.bounds.width,view.bounds.height));
+		bg.fillColor = '#000000';
+		
+		// create centre of clock
+		var circle_centre = new Path.Circle(new Point(0,0), centre_radius);
+		circle_centre.strokeColor = '#aaaaaa';
+		
+		// create hour 'hand'
+		var circle_hour = new Path.Circle(new Point(0,0), hour_radius);
+		circle_hour.strokeColor = '#ffffff';
+		circle_hour.fillColor = '#ffffff';
+		var text_hour = new PointText(new Point(0,0));
+		text_hour.fontSize = 24;
+		text_hour.justification = "center";
+		text_hour.fillColor = "#000000";
+		var group_hour = new Group(circle_hour,text_hour);
+		
+		// create minutes 'hand'
+		var circle_min = new Path.Circle(new Point(0,0), min_radius);
+		circle_min.strokeColor = '#ffffff';
+		circle_min.fillColor = '#ffffff';
+		var text_min = new PointText(new Point(0,0));
+		text_min.fontSize = 20;
+		text_min.justification = 'center';
+		text_min.fillColor = '#000000';
+		var group_min = new Group(circle_min,text_min);
+		
+		// create seconds 'hand'
+		var circle_sec = new Path.Circle(new Point(0,0), sec_radius);
+		circle_sec.strokeColor = '#ffffff';
+		circle_sec.fillColor = '#ffffff';
+		var text_sec = new PointText(new Point(0,0));
+		text_sec.fontSize = 16;
+		text_sec.justification = 'center';
+		text_sec.fillColor = '#000000';
+		var group_sec = new Group(circle_sec,text_sec);
+		
+		var debug = new PointText(new Point(100,100));
+		//debug.content = "hello";
+		
+		addAlarm( new Date(79,5,24,6,45,0) );
+		addAlarm( new Date(79,5,24,11,13,0) );
+		
+		function onFrame(event) {
+			
+			var d = new Date();
+			positionHands(d,group_hour,group_min,group_sec);
+		}
+		
+		function positionHands(d,g_hour,g_min,g_sec){
+		
+			var time_hour = d.getHours() % 12;
+			var time_min = d.getMinutes();
+			var time_sec = d.getSeconds();
+			
+			var perc_milli = d.getMilliseconds() / 1000;
+			var perc_sec = (time_sec+perc_milli)/60;
+			var perc_min = (time_min+perc_sec)/60;
+			var perc_hour = (time_hour+perc_min)/12;
+			
+			var angle_hour = (perc_hour*(2*Math.PI))-(Math.PI/2.0);
+			var angle_min = (perc_min*(2*Math.PI))-(Math.PI/2.0);
+			var angle_sec = (perc_sec*(2*Math.PI))-(Math.PI/2.0);
+			
+			positionItem(g_hour, view.center, angle_hour, centre_radius+hour_radius);
+			positionItem(g_min, g_hour.position, angle_min, hour_radius+min_radius+(sec_radius*2));
+			positionItem(g_sec, g_min.position, angle_sec, min_radius+sec_radius);
+			
+			// looks a bit shite, as the text wobbles around (doesn't appear to be subpixel)
+			//text_hour.content = time_hour; //Math.round(angle_hour*10)/10;
+			//text_min.content = time_min; //Math.round(angle_min*10)/10;
+			//text_sec.content = time_sec; //Math.round(angle_sec*10)/10;
+		}
+		
+		function onResize(){
+			circle_centre.position = view.center;
+			bg.bounds = view.bounds;
+			
+			moveAlarms();
+		}
+		
+		function positionItem(item, anchor, angle, distance){
+			
+			var xp = anchor.x + Math.cos(angle)*distance;
+			var yp = anchor.y + Math.sin(angle)*distance;
+			
+			//debug.content = angle + "\n"+ Math.round(xp) + "\n" + yp;
+			item.position = new Point( xp, yp );
+		}
+		
+		function addAlarm(d){
+			var radius_border = 3.0;
+			var c_hour = new Path.Circle(new Point(0,0), hour_radius+radius_border);
+			c_hour.strokeColor = '#ff0000';
+			c_hour.strokeWidth = 0.5;
+			var c_min = new Path.Circle(new Point(0,0), min_radius+radius_border);
+			c_min.strokeColor = '#ff0000';
+			c_min.strokeWidth = 0.5;
+			var c_sec = new Path.Circle(new Point(0,0), sec_radius+radius_border);
+			c_sec.strokeColor = '#ff0000';
+			c_sec.strokeWidth = 0.5;
+			
+			positionHands(d,c_hour,c_min,c_sec);
+			
+			alarms.push({date:d,hour:c_hour,min:c_min,sec:c_sec});
+		}
+		
+		function moveAlarms(){
+			for(var i=0;i<alarms.length;i++){
+				var alarm = alarms[i];
+				positionHands(alarm['date'],alarm['hour'],alarm['min'],alarm['sec']);
+			}
+		}
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>
