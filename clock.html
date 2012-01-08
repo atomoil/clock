@@ -60,6 +60,9 @@ Date.prototype.getWeek = function (dowOffset) {
 		var hands_layer = new Layer();
 		var numbers_layer = new Layer();
 		
+		var numbers_hour_layer = new Layer();
+		var numbers_min_layer = new Layer();
+		
 		
 		// create centre of clock
 		var circle_centre = new Path.Circle(view.center, centre_radius);
@@ -110,7 +113,6 @@ Date.prototype.getWeek = function (dowOffset) {
 		numbers_layer.addChild(text_hour);
 		*/
 		
-		
 		// create minutes 'hand'
 		var circle_min = new Path.Circle(new Point(0,0), min_radius);
 		circle_min.style = handStyle;
@@ -122,7 +124,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		text_min.fontSize = min_radius/2;
 		text_min.font = "American Typewriter, Courier, typewriter";
 		text_min.justification = 'center';
-		text_min.fillColor = '#fafafa';
+		text_min.fillColor = '#ff0000';
 		numbers_layer.addChild(text_min);
 		
 		// create seconds 'hand'
@@ -144,25 +146,41 @@ Date.prototype.getWeek = function (dowOffset) {
 		//debug.content = "hello";
 		
 		
+		
+		
+		var ii;
+		var tthr;
+		
+		
+		
+		numbers_hour_layer.activate();
+		
 		// create hours numbers
-		var grp_circle_hour_mask = new Path.Circle(new Point(0,0), hour_radius);
-		grp_circle_hour_mask.fillColor = '#ff0000';
-		grp_circle_hour_mask.name = "mask";
-		var hour_numbers_grp = new Group(grp_circle_hour_mask);
-		hour_numbers_grp.clipped = true;
+		var mask_hour = new Path.Circle(new Point(0,0), hour_radius);
+		mask_hour.fillColor = '#ff0000';
+		mask_hour.name = "mask_hour";
+		var mask_hour_grp = new Group(mask_hour);
+		mask_hour_grp.clipped = true;
 		
-		for(var ii=1;ii<=12;ii++){
-			var tthr = new PointText(new Point(0,0));
-			tthr.characterStyle = textStyle;
-			tthr.fontSize = hour_radius/2;
-			tthr.justification = "center";
-			tthr.fillColor = "#ffffff"; //"#fafafa";
-			tthr.name = "hour_"+ii;
-			tthr.content = ii;
-			hour_numbers_grp.addChild(tthr);
-		}
-		moveNumbers();
 		
+		// create minutes numbers
+		numbers_min_layer.activate();
+		
+		var mask_min = new Path.Circle(new Point(20,100), min_radius);
+		mask_min.fillColor = '#ff0000';
+		mask_min.name = "mask_min";
+		var mask_min_grp = new Group(mask_min);
+		//mask_min_grp.clipped = true;
+		
+		createNumbers(mask_hour_grp, mask_min_grp);
+		
+		numbers_min_layer.visible = false;
+		
+		updateNumbers(mask_hour_grp, mask_min_grp);
+		
+		
+		//min_numbers_grp.clipped = true;
+		//hour_numbers_grp.clipped = true;
 		
 		
 		var nowDate = new Date();
@@ -191,7 +209,9 @@ Date.prototype.getWeek = function (dowOffset) {
 				var d = new Date();
 			}
 			positionHands(d,circle_weeknum,circle_weekday,group_hour,group_min,group_sec,null,text_min,text_sec);
-			hour_numbers_grp.children['mask'].position = group_hour.position;
+			mask_hour.position = group_hour.position;
+			mask_min.position = group_min.position;
+			updateNumbers(mask_hour_grp, mask_min_grp);
 		}
 		
 		function positionHands(d,g_weeknum,g_weekday,g_hour,g_min,g_sec,t_hour,t_min,t_sec){
@@ -251,7 +271,7 @@ Date.prototype.getWeek = function (dowOffset) {
 			bg.bounds = view.bounds;
 			
 			moveAlarms();
-			moveNumbers();
+			updateNumbers(mask_hour_grp, mask_min_grp);
 		}
 		
 		function positionItem(item, anchor, angle, distance){
@@ -291,14 +311,52 @@ Date.prototype.getWeek = function (dowOffset) {
 			}
 		}
 		
-		function moveNumbers(){
-			for(var ii=1;ii<=12;ii++){
-				tthr = hour_numbers_grp.children["hour_"+ii];
-				var angle_txt_hour = ((ii/12)*(2*Math.PI))-(Math.PI/2.0);
-				positionItem(tthr, view.center, angle_txt_hour,  centre_radius+(weeknum_radius*2)+(weekday_radius*4)+hour_radius/*+(min_radius*2)+(sec_radius*4)*/);
-				tthr.position.y += tthr.fontSize / 2.0;
+		function createNumbers(hour_grp,min_grp){
+			
+			for(ii=1;ii<=12;ii++){
+				tthr = new PointText(new Point(0,0));
+				//tthr.remove();
+				tthr.characterStyle = textStyle;
+				tthr.fontSize = hour_radius/2;
+				tthr.justification = "center";
+				tthr.fillColor = "#ffffff"; //"#fafafa";
+				tthr.name = "hour_"+ii;
+				tthr.content = ii;
+				hour_grp.addChild(tthr);
 			}
 			
+			for(ii=0;ii<=59;ii++){
+				tthr = new PointText(new Point(100,100));
+				//tthr.remove();
+				tthr.characterStyle = textStyle;
+				tthr.fontSize = min_radius/2;
+				tthr.justification = "center";
+				tthr.fillColor = "#ffffff"; //"#fafafa";
+				tthr.name = "min_"+ii;
+				tthr.content = ii;
+				min_grp.addChild(tthr);
+			}
+		
+		}
+		
+		function updateNumbers(hour_grp,min_grp){
+			var ii;
+			for(ii=1;ii<=12;ii++){
+				tthr = hour_grp.children["hour_"+ii];
+				if (tthr != undefined){
+					var angle_txt_hour = ((ii/12)*(2*Math.PI))-(Math.PI/2.0);
+					positionItem(tthr, view.center, angle_txt_hour,  centre_radius+(weeknum_radius*2)+(weekday_radius*4)+hour_radius/*+(min_radius*2)+(sec_radius*4)*/);
+					tthr.position.y += tthr.fontSize / 2.0;
+				}
+			}
+			for(ii=0;ii<=59;ii++){
+				tthr = min_grp.children["min_"+ii];
+				if (tthr != undefined){
+					var angle_txt_min = ((ii/60)*(2*Math.PI))-(Math.PI/2.0);
+					positionItem(tthr, group_hour.position, angle_txt_min, hour_radius+min_radius+(sec_radius*2));
+					tthr.position.y += tthr.fontSize / 2.0;
+				}
+			}
 		}
 	</script>
 </head>
