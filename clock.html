@@ -173,8 +173,8 @@ Date.prototype.getWeek = function (dowOffset) {
 			if (time_hour < 1) time_hour = 12-time_hour;
 			var time_min = d.getMinutes();
 			var time_sec = d.getSeconds();
-			var time_weekday = d.getDay();
-			var time_weeknum = d.getWeek();
+			var time_weekday = (d.getDay()-1) % 12;
+			var time_weeknum = d.getWeek(1);
 			
 			var perc_milli = d.getMilliseconds() / 1000;
 			var perc_sec = (time_sec+perc_milli)/60;
