@@ -137,13 +137,14 @@ Date.prototype.getWeek = function (dowOffset) {
 		var nowDate = new Date();
 		
 		//addAlarm( new Date(79,5,24,6,45,0) );
-		addAlarm( new Date(79,5,24,nowDate.getHours(),nowDate.getMinutes()+1.0,0) );
+		addAlarm( new Date(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate(),nowDate.getHours(),nowDate.getMinutes()+1.0,nowDate.getSeconds()) );
 		
 		var _oldDate = new Date();
 		var _count = 0;
 		var _max = 3;
 		function onFrame(event) {
-			
+			/*
+			// visually debug the date, by making it keep moving
 			var now = new Date();
 			var inc = 0;
 			_count += 1;
@@ -153,6 +154,8 @@ Date.prototype.getWeek = function (dowOffset) {
 			}
 			var d = new Date(_oldDate.getFullYear(),_oldDate.getMonth(),_oldDate.getDate()+inc,now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
 			_oldDate = d;
+			*/
+			var d = new Date();
 			positionHands(d,circle_weeknum,circle_weekday,group_hour,group_min,group_sec,text_hour,text_min,text_sec);
 		}
 		
@@ -227,6 +230,10 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		function addAlarm(d){
 			var radius_border = 2.5;
+			var c_weeknum = new Path.Circle(new Point(0,0), weeknum_radius+radius_border);
+			c_weeknum.style = alarmStyle;
+			var c_weekday = new Path.Circle(new Point(0,0), weekday_radius+radius_border);
+			c_weekday.style = alarmStyle;
 			var c_hour = new Path.Circle(new Point(0,0), hour_radius+radius_border);
 			c_hour.style = alarmStyle;
 			alarms_layer.addChild(c_hour);
@@ -237,9 +244,9 @@ Date.prototype.getWeek = function (dowOffset) {
 			c_sec.style = alarmStyle;
 			alarms_layer.addChild(c_sec);
 			
-			positionHands(d,null,null,c_hour,c_min,c_sec);
+			positionHands(d,c_weeknum,c_weekday,c_hour,c_min,c_sec);
 			
-			alarms.push({date:d,hour:c_hour,min:c_min,sec:c_sec,trigger:0});
+			alarms.push({date:d,weeknum:c_weeknum,weekday:c_weekday,hour:c_hour,min:c_min,sec:c_sec,trigger:0});
 		}
 		
 		function moveAlarms(){
