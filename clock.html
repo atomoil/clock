@@ -45,9 +45,9 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		var alarms = new Array();
 		
-		var centre_radius = 1;
-		var weeknum_radius = 5;
-		var weekday_radius = 10;
+		var centre_radius = 10;
+		var weeknum_radius = 10;
+		var weekday_radius = 20;
 		var hour_radius = 60;
 		var min_radius = 40;
 		var sec_radius = 15;
@@ -55,6 +55,10 @@ Date.prototype.getWeek = function (dowOffset) {
 		// create background
 		var bg = new Path.Rectangle(new Point(0,0),new Size(view.bounds.width,view.bounds.height));
 		bg.fillColor = '#000000';
+		
+		var debug = new PointText(new Point(100,100));
+		debug.fillColor = '#ff0000';
+		//debug.content = "hello";
 		
 		var alarms_layer = new Layer();
 		var hands_layer = new Layer();
@@ -83,6 +87,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		var dateHandStyle = {
 			strokeColor: handStyle.strokeColor,
 			strokeWidth: 2.0,
+			dashArray: [4,1],
 		};
 		var textStyle = {
 			font: "American Typewriter, Courier, typewriter",
@@ -119,6 +124,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		var group_min = new Group(circle_min); //,text_min);
 		hands_layer.addChild(group_min);
 		
+		/*
 		// create minute text
 		var text_min = new PointText(new Point(100,50));
 		text_min.fontSize = min_radius/2;
@@ -126,6 +132,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		text_min.justification = 'center';
 		text_min.fillColor = '#ff0000';
 		numbers_layer.addChild(text_min);
+		*/
 		
 		// create seconds 'hand'
 		var circle_sec = new Path.Circle(new Point(0,0), sec_radius);
@@ -141,26 +148,15 @@ Date.prototype.getWeek = function (dowOffset) {
 		text_sec.fillColor = '#fafafa';
 		numbers_layer.addChild(text_sec);
 		
-		var debug = new PointText(new Point(100,100));
-		debug.fillColor = '#ff0000';
-		//debug.content = "hello";
 		
-		
-		
-		
-		var ii;
-		var tthr;
-		
-		
-		
-		numbers_hour_layer.activate();
 		
 		// create hours numbers
+		numbers_hour_layer.activate();
+
 		var mask_hour = new Path.Circle(new Point(0,0), hour_radius);
-		mask_hour.fillColor = '#ff0000';
-		mask_hour.name = "mask_hour";
+		//mask_hour.fillColor = '#ff0000';
 		var mask_hour_grp = new Group(mask_hour);
-		mask_hour_grp.clipped = true;
+		//mask_hour_grp.clipped = true;
 		
 		
 		// create minutes numbers
@@ -168,16 +164,14 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		var mask_min = new Path.Circle(new Point(20,100), min_radius);
 		mask_min.fillColor = '#ff0000';
-		mask_min.name = "mask_min";
 		var mask_min_grp = new Group(mask_min);
-		//mask_min_grp.clipped = true;
+		mask_min_grp.clipped = true;
+		
 		
 		createNumbers(mask_hour_grp, mask_min_grp);
 		
-		numbers_min_layer.visible = false;
-		
-		updateNumbers(mask_hour_grp, mask_min_grp);
-		
+		numbers_hour_layer.visible = false;
+		//numbers_min_layer.visible = false;
 		
 		//min_numbers_grp.clipped = true;
 		//hour_numbers_grp.clipped = true;
@@ -190,8 +184,15 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		var _debug = false;
 		var _oldDate = new Date();
+		var _currentDate = new Date();
 		var _count = 0;
 		var _max = 5;
+		
+		
+		//updateNumbers(mask_hour_grp, mask_min_grp);
+		
+		
+		
 		function onFrame(event) {
 			
 			if (_debug){
@@ -203,15 +204,17 @@ Date.prototype.getWeek = function (dowOffset) {
 					_count = 0;
 					inc = 1;
 				}
-				var d = new Date(_oldDate.getFullYear(),_oldDate.getMonth(),_oldDate.getDate()+inc,now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
-				_oldDate = d;
+				_currentDate = new Date(_oldDate.getFullYear(),_oldDate.getMonth(),_oldDate.getDate()+inc,now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
+				
 			} else {
-				var d = new Date();
+				_currentDate = new Date();
 			}
-			positionHands(d,circle_weeknum,circle_weekday,group_hour,group_min,group_sec,null,text_min,text_sec);
+			positionHands(_currentDate,circle_weeknum,circle_weekday,group_hour,group_min,group_sec,null,null,text_sec);
 			mask_hour.position = group_hour.position;
 			mask_min.position = group_min.position;
 			updateNumbers(mask_hour_grp, mask_min_grp);
+			
+			_oldDate = _currentDate;
 		}
 		
 		function positionHands(d,g_weeknum,g_weekday,g_hour,g_min,g_sec,t_hour,t_min,t_sec){
@@ -238,7 +241,7 @@ Date.prototype.getWeek = function (dowOffset) {
 			
 			if (g_weeknum != null) positionItem(g_weeknum, view.center, angle_weeknum, centre_radius+weeknum_radius+(weekday_radius*2));
 			if (g_weekday != null) positionItem(g_weekday, g_weeknum.position, angle_weekday, weeknum_radius+weekday_radius);
-			positionItem(g_hour, view.center, angle_hour, centre_radius+(weeknum_radius*2)+(weekday_radius*4)+hour_radius/*+(min_radius*2)+(sec_radius*4)*/);
+			positionItem(g_hour, view.center, angle_hour, centre_radius+/*(weeknum_radius*2)+(weekday_radius*4)*/+hour_radius/*+(min_radius*2)+(sec_radius*4)*/);
 			positionItem(g_min, g_hour.position, angle_min, hour_radius+min_radius+(sec_radius*2));
 			positionItem(g_sec, g_min.position, angle_sec, min_radius+sec_radius);
 			
@@ -248,7 +251,7 @@ Date.prototype.getWeek = function (dowOffset) {
 			//text_sec.content = time_sec; //Math.round(angle_sec*10)/10;
 			if (t_hour != undefined){
 				var angle_txt_hour = ((time_hour/12)*(2*Math.PI))-(Math.PI/2.0);
-				positionItem(t_hour, view.center, angle_txt_hour,  centre_radius+(weeknum_radius*2)+(weekday_radius*4)+hour_radius/*+(min_radius*2)+(sec_radius*4)*/);
+				positionItem(t_hour, view.center, angle_txt_hour,  centre_radius+/*(weeknum_radius*2)+(weekday_radius*4)*/+hour_radius/*+(min_radius*2)+(sec_radius*4)*/);
 				t_hour.position.y += t_hour.fontSize / 2.0;
 				t_hour.content = time_hour;
 			}
@@ -313,9 +316,11 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		function createNumbers(hour_grp,min_grp){
 			
+			var ii;
+			var tthr;
+			
 			for(ii=1;ii<=12;ii++){
 				tthr = new PointText(new Point(0,0));
-				//tthr.remove();
 				tthr.characterStyle = textStyle;
 				tthr.fontSize = hour_radius/2;
 				tthr.justification = "center";
@@ -325,11 +330,10 @@ Date.prototype.getWeek = function (dowOffset) {
 				hour_grp.addChild(tthr);
 			}
 			
-			for(ii=0;ii<=59;ii++){
+			for(ii=0;ii<=59;ii+=5){
 				tthr = new PointText(new Point(100,100));
-				//tthr.remove();
 				tthr.characterStyle = textStyle;
-				tthr.fontSize = min_radius/2;
+				tthr.fontSize = min_radius*1.25;
 				tthr.justification = "center";
 				tthr.fillColor = "#ffffff"; //"#fafafa";
 				tthr.name = "min_"+ii;
@@ -341,12 +345,25 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		function updateNumbers(hour_grp,min_grp){
 			var ii;
+			var tthr;
+			
+			var nowHour = _currentDate.getHours() % 12;
+			var nowMinute = _currentDate.getMinutes();
+			
 			for(ii=1;ii<=12;ii++){
 				tthr = hour_grp.children["hour_"+ii];
 				if (tthr != undefined){
 					var angle_txt_hour = ((ii/12)*(2*Math.PI))-(Math.PI/2.0);
 					positionItem(tthr, view.center, angle_txt_hour,  centre_radius+(weeknum_radius*2)+(weekday_radius*4)+hour_radius/*+(min_radius*2)+(sec_radius*4)*/);
 					tthr.position.y += tthr.fontSize / 2.0;
+					/*
+					tthr.fillColor = "#999999";
+					//tthr.opacity = 0.5; // paperjs 0.22 bug - if a masked item is not 1.0 opacity then it becomes invisible
+					if (ii == nowHour){
+						tthr.fillColor = "#ffffff";
+						//tthr.opacity = 1.0;
+					}
+					*/
 				}
 			}
 			for(ii=0;ii<=59;ii++){
@@ -355,6 +372,15 @@ Date.prototype.getWeek = function (dowOffset) {
 					var angle_txt_min = ((ii/60)*(2*Math.PI))-(Math.PI/2.0);
 					positionItem(tthr, group_hour.position, angle_txt_min, hour_radius+min_radius+(sec_radius*2));
 					tthr.position.y += tthr.fontSize / 2.0;
+					/*
+					tthr.fillColor = "#999999";
+					//tthr.opacity = 0.9; // paperjs 0.22 bug - if a masked item is not 1.0 opacity then it becomes invisible
+					if (ii == nowMinute){
+						tthr.fillColor = "#ffffff";
+						min_grp.addChild(tthr);
+						//tthr.opacity = 1.0;
+					}
+					*/
 				}
 			}
 		}
