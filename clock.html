@@ -120,7 +120,6 @@ Date.prototype.getWeek = function (dowOffset) {
 			dashArray: [4,1],
 		};
 		var textStyle = {
-			fffont: "American Typewriter, Courier, typewriter",
 			font: "Helvetica",
 			justification: "center",
 		};
@@ -187,6 +186,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		
 		var _debug = false;
+		var _debugMins = 1.01; // how many minutes to add for each update
 		var _oldDate = new Date();
 		var _count = 0;
 		var _max = 1;
@@ -196,17 +196,8 @@ Date.prototype.getWeek = function (dowOffset) {
 		function onFrame(event) {
 			
 			if (_debug){
-				// visually debug the date, by making it keep moving
-				
-				var inc = 0;
-				_count += 1;
-				_debugMins = 0;
-				if (_count > _max){
-					_count = 0;
-					_debugMins += 1.01;
-				}
+				// visually debug the date / time, by making it keep moving
 				_currentDate = new Date(_oldDate.getTime() + (_debugMins*60000));
-				//_currentDate = new Date(_oldDate.getFullYear(),_oldDate.getMonth(),_oldDate.getDate()+inc,now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
 				
 			} else {
 				_currentDate = new Date();
@@ -254,6 +245,52 @@ Date.prototype.getWeek = function (dowOffset) {
 			
 		}
 		
+		
+		function initialiseClocks()
+		{
+			
+		}
+		
+		function updateClocks(d){
+		
+			var time_hour = d.getHours() % 12;
+			if (time_hour < 1) time_hour = 12-time_hour;
+			var time_min = d.getMinutes();
+			var time_sec = d.getSeconds();
+			var time_weekday = (d.getDay()-1) % 12;
+			var time_weeknum = d.getWeek(1);
+			
+			// calculate the relative times
+			var perc_milli = d.getMilliseconds() / 1000;
+			var perc_sec = (time_sec+perc_milli)/60;
+			var perc_min = (time_min+perc_sec)/60;
+			var perc_hour = (time_hour+perc_min)/12;
+			var perc_weekday = time_weekday / 7;
+			var perc_weeknum = time_weeknum / 52;
+			
+			// calculate the angles
+			var angle_weeknum = (perc_weeknum*(2*Math.PI))-(Math.PI/2.0);
+			var angle_weekday = (perc_weekday*(2*Math.PI))-(Math.PI/2.0);
+			var angle_hour = (perc_hour*(2*Math.PI))-(Math.PI/2.0);
+			var angle_min = (perc_min*(2*Math.PI))-(Math.PI/2.0);
+			var angle_sec = (perc_sec*(2*Math.PI))-(Math.PI/2.0);
+			
+			var time = {
+				"weeknum" : angle_weeknum,
+				"weekday" : angle_weekday,
+				"hour"    : angle_hour,
+				"min"     : angle_min,
+				"sec"     : angle_sec 
+			};
+			
+			for(var i=0;i<clockHands.length;i++)
+			{
+				clockHands[i].updateTime(time);
+			}
+			
+		}
+		
+		
 		function onResize(){
 			circle_centre.position = view.center;
 			bg.bounds = view.bounds;
@@ -272,7 +309,7 @@ Date.prototype.getWeek = function (dowOffset) {
 			
 			
 			moveAlarms();
-			updateNumbers(mask_hour_grp, mask_min_grp);
+			updateNumbers(mask_hour_grp, mask_min_grp, mask_sec_grp);
 		}
 		
 		function calculateSizes(){
@@ -440,6 +477,103 @@ Date.prototype.getWeek = function (dowOffset) {
 				}
 			}
 		}
+		
+		// NEW OOP structure
+		
+		function ClockHands(hand_type,gap_between_numbers,hand_rad,position_rad,central_object)
+		{
+			// what type of hand is it?
+			this.isHourHand = false;
+			if (hand_type == "hours") this.isHourHand = true;
+			this.hand_type = hand_type;
+			
+			this.numerals_gap = gap_between_numbers;
+			this.hand_radius = hand_rad;
+			this.position_radius = position_rad;
+			
+			this.central = central_object;
+			
+			//this.numerals_group;
+			
+			this.constructHands();
+		}
+		ClockHands.prototype.constructHands = function()
+		{
+			// create circle 'hand'
+			this.vec_hand = new Shape.Circle(new Point(0,0), this.hand_radius);
+			this.vec_hand.style = handStyle;
+			
+			// create mask for numerals
+			this.vec_mask = new Shape.Circle(new Point(0,0), this.hand_radius-(handStyle.strokeWidth/2));
+			this.vec_mask.name = "mask";
+			this.numerals_group = new Group(this.vec_mask);
+			//this.numerals_group.clipped = true;
+			
+			// create numerals
+			this.layoutNumbers();
+			
+		}
+		ClockHands.prototype.layoutNumbers = function()
+		{
+			removeChildrenButNotMask(this.numerals_group);
+			
+			var start = 0;
+			var max = 59;
+			if (this.isHourHand){
+				start = this.numerals_gap;
+				max = 12;
+			}
+			
+			for(ii=start;ii<=max;ii+=this.numerals_gap){
+				tthr = new PointText(new Point(0,0));
+				tthr.characterStyle = textStyle;
+				tthr.fontSize = this.radius*.75;
+				tthr.justification = "center";
+				tthr.fillColor = "#ffffff";
+				tthr.content = ii;
+				raster = tthr.rasterize();
+				tthr.remove();
+				raster.name = "counter_"+ii;
+				this.numerals_group.addChild(raster);
+			}
+		}
+		ClockHands.prototype.updateTime = function(time)
+		{
+			// setup variables
+			var min = 0;
+			var max = 59;
+			var angle_max = 60;
+			
+			if (this.isHourHand){
+				min = 1;
+				max = 12;
+				angle_max = 12;
+			}
+			
+			var current_angle =  time[this.hand_type];
+			
+			// update numerals
+			//
+			for(ii=min;ii<=max;ii++){
+				tthr = this.numerals_group.children["counter_"+ii];
+				if (tthr != undefined){
+					var correct_angle = ((ii/angle_max)*(2*Math.PI))-(Math.PI/2.0);
+					positionItem(tthr, this.central.position, correct_angle, this.position_radius);
+					
+				}
+			}
+			
+			// update hand
+			//
+			positionItem(this.vec_hand, this.central.position, current_angle, this.position_radius);
+			
+			
+			// update mask
+			//
+			this.vec_mask.position = this.vec_hand.position;
+			
+		}
+		
 	</script>
 </head>
 <body bgcolor="#000000">

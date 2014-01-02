@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Masking in Paper.js</title>
+	<link rel="stylesheet" href="style.css">
+	<script type="text/javascript" src="lib-0.9.15/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		
+		var circs = [];
+		
+		for(var i=0;i<5;i++){
+			var c = new ExampleCircle(new Point(100+(100*i),100),50);
+			circs.push(c);
+		}
+		
+		function onFrame(event) {
+			
+			for(var i=0;i<circs.length;i++){
+				circs[i].update();
+			}
+			
+		}
+		
+		function ExampleCircle(pt,radius)
+		{
+			this.circle = new Shape.Circle(pt, radius);
+			this.circle.fillColor = '#444444';
+			this.circle.strokeColor = '#111111';
+			this.inc = Math.random();
+		}
+		ExampleCircle.prototype.update = function(){
+			var xp = this.circle.radius;
+			xp += this.inc;
+			if (xp > 300) this.inc = -Math.abs(this.inc);
+			if (xp < 0) this.inc = Math.abs(this.inc);
+			this.circle.radius = xp;
+		}
+		
+		
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>
