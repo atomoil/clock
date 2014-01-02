@@ -44,6 +44,27 @@ Date.prototype.getWeek = function (dowOffset) {
 	<script type="text/javascript" src="lib-0.9.15/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		
+		
+		/*
+		
+		
+		Hand Object
+		-- hand circle
+		-- mask circle
+		-- numeric display
+		
+		-- parent hand (or point)
+		-- child hand (or none)
+		
+		-- distance from central point (parent hand)
+		
+		-- type (second, minute, hour etc)
+		
+		-- numeric display offset (all, 2, 5)
+		
+		*/
+		
+		
 		var alarms = new Array();
 		
 		// relative percentage of screen
@@ -247,7 +268,8 @@ Date.prototype.getWeek = function (dowOffset) {
 			mask_min.radius = min_radius;
 			mask_sec.radius = sec_radius;
 			
-			//createNumbers(mask_hour_grp, mask_min_grp, mask_sec_grp);
+			createNumbers(mask_hour_grp, mask_min_grp, mask_sec_grp);
+			
 			
 			moveAlarms();
 			updateNumbers(mask_hour_grp, mask_min_grp);
@@ -354,7 +376,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		}
 		
 		function removeChildrenButNotMask(grp){
-			for(var i=0;i<grp.children.length;i++){
+			for(var i=grp.children.length-1;i>=0;i--){
 				var item = grp.children[i];
 				if (item.name != "mask") item.remove();
 			}
