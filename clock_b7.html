@@ -52,7 +52,7 @@ Date.prototype.getWeek = function (dowOffset) {
 		var sec_radius_perc = 10;
 		
 		
-		var centre_radius = 20;
+		var centre_radius = 5;
 		var weeknum_radius = 10;
 		var weekday_radius = 20;
 		var hour_radius;
@@ -78,9 +78,9 @@ Date.prototype.getWeek = function (dowOffset) {
 		
 		
 		// create centre of clock
-		var circle_centre = new Shape.Circle(view.center, centre_radius);
+		var circle_centre = new Path.Circle(view.center, centre_radius);
 		circle_centre.strokeColor = '#ffffff';
-		circle_centre.strokeWidth = 4.0;
+		circle_centre.strokeWidth = 0.1;
 		hands_layer.addChild(circle_centre);
 		
 		var alarmStyle = {
@@ -135,20 +135,17 @@ Date.prototype.getWeek = function (dowOffset) {
 		// create the masks for hours, minutes and seconds
 		
 		var mask_hour = new Shape.Circle(new Point(0,0), hour_radius-(handStyle.strokeWidth/2));
-		mask_hour.name = "mask";
 		var mask_hour_grp = new Group(mask_hour);
 		mask_hour_grp.opacity = 0.99;
 		mask_hour_grp.clipped = true;
 		
 		var mask_min = new Shape.Circle(new Point(20,100), min_radius-(handStyle.strokeWidth/2));
-		mask_min.name = "mask";
 		var mask_min_grp = new Group(mask_min);
 		mask_min_grp.opacity = 0.99;
 		mask_min_grp.clipped = true;
 		
 		
 		var mask_sec = new Shape.Circle(new Point(20,100), sec_radius-(handStyle.strokeWidth/2));
-		mask_sec.name = "mask";
 		var mask_sec_grp = new Group(mask_sec);
 		mask_sec_grp.opacity = 0.99;
 		mask_sec_grp.clipped = true;
@@ -162,13 +159,11 @@ Date.prototype.getWeek = function (dowOffset) {
 		//addAlarm( new Date(79,5,24,6,45,0) );
 		//addAlarm( new Date(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate(),nowDate.getHours(),nowDate.getMinutes()+1.0,nowDate.getSeconds()) );
 		
-		var _currentDate = new Date();
-		
-		
 		var _debug = false;
 		var _oldDate = new Date();
+		var _currentDate = new Date();
 		var _count = 0;
-		var _max = 1;
+		var _max = 5;
 		
 		
 		
@@ -176,16 +171,14 @@ Date.prototype.getWeek = function (dowOffset) {
 			
 			if (_debug){
 				// visually debug the date, by making it keep moving
-				
+				var now = new Date();
 				var inc = 0;
 				_count += 1;
-				_debugMins = 0;
 				if (_count > _max){
 					_count = 0;
-					_debugMins += 1.01;
+					inc = 1;
 				}
-				_currentDate = new Date(_oldDate.getTime() + (_debugMins*60000));
-				//_currentDate = new Date(_oldDate.getFullYear(),_oldDate.getMonth(),_oldDate.getDate()+inc,now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
+				_currentDate = new Date(_oldDate.getFullYear(),_oldDate.getMonth(),_oldDate.getDate()+inc,now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
 				
 			} else {
 				_currentDate = new Date();
@@ -247,7 +240,6 @@ Date.prototype.getWeek = function (dowOffset) {
 			mask_min.radius = min_radius;
 			mask_sec.radius = sec_radius;
 			
-			//createNumbers(mask_hour_grp, mask_min_grp, mask_sec_grp);
 			
 			moveAlarms();
 			updateNumbers(mask_hour_grp, mask_min_grp);
@@ -354,9 +346,8 @@ Date.prototype.getWeek = function (dowOffset) {
 		}
 		
 		function removeChildrenButNotMask(grp){
-			for(var i=0;i<grp.children.length;i++){
-				var item = grp.children[i];
-				if (item.name != "mask") item.remove();
+			for(var i=1;i<grp.children.length;i++){
+				grp.children[i].remove();
 			}
 		}
 		
