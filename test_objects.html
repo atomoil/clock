@@ -28,6 +28,13 @@
 			this.circle.fillColor = '#444444';
 			this.circle.strokeColor = '#111111';
 			this.inc = Math.random();
+			
+			ExampleCircle.prototype.testtest = function(){
+				console.log("this->",this);
+			}
+			
+			this.testtest();
+			
 		}
 		ExampleCircle.prototype.update = function(){
 			var xp = this.circle.radius;
